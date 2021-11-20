@@ -1,0 +1,3 @@
+[submodule "Queue"]
+	path = Queue
+	url = git@github.com:zloyvolkey/Queue.git
