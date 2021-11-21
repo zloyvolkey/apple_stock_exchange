@@ -17,31 +17,6 @@ int main(int argc, char ** argv) {
     exit(EXIT_SUCCESS);
 }
 
-int cancel_order(int oid) {
-     
-    Order * order = (Order *)malloc(sizeof(Order));
-    int retval = -1;
-
-    retval = queue_get_filtered(sell_q, (void **)&order, (int (*)(void *, void *))cmp_filter, (void *)&oid);
-    if ( retval != 0 ) {
-        retval = queue_get_filtered(buy_q, (void **)&order, (int (*)(void *, void *))cmp_filter, (void *)&oid);
-        if ( retval != 0 ) {
-            fprintf(stderr, "Can't find order with id=%d\n", oid);
-            return -1;
-        }
-    }
-    
-    Cancel * receipt = (Cancel *)malloc(sizeof(Cancel));
-    receipt->oid = oid;
-
-    queue_put(cancel_q, receipt);
-
-    printf("X,%d\n", order->oid);
-
-    free(order);
-    return 0;
-}
-
 int parse_signal(char * signal ) {
 
     char * token;
@@ -113,7 +88,7 @@ int parse_signal(char * signal ) {
 }
 
 
-void process_order(Order * new_order) {
+int process_order(Order * new_order) {
 
     queue_t * q_get = new_order->side == 'S' ? buy_q : sell_q;
     queue_t * q_put = new_order->side == 'S' ? sell_q : buy_q;
@@ -147,22 +122,38 @@ void process_order(Order * new_order) {
             break;
         } else {                                        
             fprintf(stderr, "Error while getting from queue! %d\n", retval);
-            break;
+            return -1;
         }
     }
 
-    return;
+    return 0;
 }
 
-/**
- * @brief Формирование отчета о совершенной сделке
- * 
- * @param side 
- * @param id_initiator 
- * @param id_consumer 
- * @param qty 
- * @param price 
- */
+int cancel_order(int oid) {
+     
+    Order * order = (Order *)malloc(sizeof(Order));
+    int retval = -1;
+
+    retval = queue_get_filtered(sell_q, (void **)&order, (int (*)(void *, void *))cmp_filter, (void *)&oid);
+    if ( retval != 0 ) {
+        retval = queue_get_filtered(buy_q, (void **)&order, (int (*)(void *, void *))cmp_filter, (void *)&oid);
+        if ( retval != 0 ) {
+            fprintf(stderr, "Can't find order with id=%d\n", oid);
+            return -1;
+        }
+    }
+    
+    Cancel * receipt = (Cancel *)malloc(sizeof(Cancel));
+    receipt->oid = oid;
+
+    queue_put(cancel_q, receipt);
+
+    printf("X,%d\n", order->oid);
+
+    free(order);
+    return 0;
+}
+
 int make_trade_receipt(char side, uint id_initiator, uint id_consumer, int qty, double price) {
     
     Trade * receipt = (Trade *)malloc(sizeof(Trade));

@@ -45,7 +45,6 @@ queue_t *cancel_q;          // список отмененных заявок
 /**
  * @brief Парсинг строки сигнала
  * 
- * @param signal 
  * @return 0 if everything worked, < 1 if error occured
  */
 int parse_signal(char * signal );
@@ -60,12 +59,14 @@ int cancel_order(int oid);
 /**
  * @brief исполнение заявки на покупку/продажу
  * 
+ * @return 0 if everything worked, < 1 if error occured
  */
-void process_order(Order * new_order);
+int process_order(Order * new_order);
 
 /**
  * @brief Формирование отчета о совершенной сделке
  * 
+ * @return 0 if everything worked, < 1 if error occured
  */
 int make_trade_receipt(char side, uint id_initiator, uint id_consumer, int qty, double price);
 
